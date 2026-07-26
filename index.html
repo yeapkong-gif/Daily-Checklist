@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sovannphum School Checklist / បញ្ជីត្រួតពិនិត្យសាលាសុវណ្ណភូមិ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #faf7f0;
+    --ink: #2b2b2b;
+    /* default (pre-login) palette */
+    --primary: #4a7fbb;
+    --primary-deep: #2f5a8a;
+    --accent: #ffd166;
+    --accent-soft: #fff1cf;
+    --card: #ffffff;
+    --success: #4a7c59;
+  }
+  body.theme-boy{
+    --primary: #3f7fd6;
+    --primary-deep: #23508f;
+    --accent: #8fd3ff;
+    --accent-soft: #e4f4ff;
+    --bg-decor-1: '🚀'; --bg-decor-2: '⭐'; --bg-decor-3: '☁️'; --bg-decor-4: '⚡';
+  }
+  body.theme-girl{
+    --primary: #e8779e;
+    --primary-deep: #c14f79;
+    --accent: #ffd1e6;
+    --accent-soft: #fff0f6;
+    --bg-decor-1: '💖'; --bg-decor-2: '🌸'; --bg-decor-3: '✨'; --bg-decor-4: '🦋';
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background: linear-gradient(180deg, var(--accent-soft), var(--paper) 60%);
+    font-family:'Fredoka', 'Noto Sans Khmer', sans-serif;
+    color: var(--ink);
+    display:flex;
+    justify-content:center;
+    padding: 24px 12px 60px;
+    position: relative;
+    overflow-x: hidden;
+    transition: background 0.4s ease;
+  }
+  .kh{ font-family:'Noto Sans Khmer', sans-serif; }
+
+  /* floating decorations */
+  .decor{
+    position: fixed;
+    font-size: 1.6rem;
+    opacity: 0.35;
+    pointer-events: none;
+    animation: float 7s ease-in-out infinite;
+    z-index: 0;
+  }
+  @keyframes float{
+    0%,100%{ transform: translateY(0) rotate(0deg); }
+    50%{ transform: translateY(-18px) rotate(8deg); }
+  }
+
+  .app{ width: 100%; max-width: 640px; position: relative; z-index: 1; }
+
+  /* ---------- AUTH SCREEN ---------- */
+  .auth-card{
+    background: var(--card);
+    border-radius: 24px;
+    padding: 28px 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+  .auth-card h1{
+    color: var(--primary-deep);
+    font-size: 1.5rem;
+    margin: 4px 0 2px;
+  }
+  .auth-card h1 .kh{ display:block; font-size: 1.05rem; color: var(--primary); margin-top: 2px; }
+  .auth-card .school{
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: #b98d3e; font-weight: 600;
+  }
+  .auth-card .school .kh{ text-transform:none; letter-spacing:0; display:block; font-size:0.82rem; }
+
+  .tabs{ display:flex; gap:8px; justify-content:center; margin: 18px 0 16px; }
+  .tab-btn{
+    border: none; padding: 8px 18px; border-radius: 20px; font-family:inherit;
+    font-weight:600; font-size:0.9rem; cursor:pointer; background:#f0eee6; color:#888;
+  }
+  .tab-btn.active{ background: var(--primary); color:white; }
+
+  .field{ text-align:left; margin-bottom: 12px; }
+  .field label{ font-size:0.8rem; color:#8a8a8a; display:block; margin-bottom:4px; }
+  .field input{
+    width:100%; padding: 10px 12px; border-radius: 10px; border: 2px solid #eee2c8;
+    font-family: inherit; font-size: 1rem; background: #fffdf8;
+  }
+  .field input:focus{ outline:none; border-color: var(--primary); }
+
+  .gender-pick{ display:flex; gap:12px; margin: 6px 0 14px; }
+  .gender-btn{
+    flex:1; border: 2px solid #eee2c8; background: white; border-radius: 16px;
+    padding: 14px 8px; cursor:pointer; font-family:inherit; font-size: 0.95rem; font-weight:600;
+    display:flex; flex-direction:column; align-items:center; gap:6px; color:#888;
+  }
+  .gender-btn .emoji{ font-size: 1.8rem; }
+  .gender-btn.selected.boy{ border-color:#3f7fd6; background:#eaf4ff; color:#2f5a8a; }
+  .gender-btn.selected.girl{ border-color:#e8779e; background:#ffeef4; color:#c14f79; }
+
+  .primary-btn{
+    width:100%; border:none; border-radius: 14px; padding: 12px; font-family:inherit;
+    font-size: 1.05rem; font-weight:700; color:white; background: var(--primary); cursor:pointer;
+    margin-top: 4px;
+  }
+  .primary-btn:hover{ filter: brightness(1.05); }
+  .auth-error{ color:#c94f3d; font-size:0.85rem; margin-top:10px; min-height: 18px; }
+
+  /* ---------- APP SCREEN ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    background: var(--card); border-radius: 20px; padding: 14px 18px; margin-bottom: 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  }
+  .greet{ display:flex; align-items:center; gap:10px; }
+  .greet .avatar{ font-size: 2rem; }
+  .greet .name{ font-weight:700; font-size:1.05rem; color: var(--primary-deep); }
+  .greet .sub{ font-size:0.75rem; color:#999; }
+  .logout-btn{
+    border:none; background:none; color:#aaa; font-family:inherit; font-size:0.8rem;
+    text-decoration: underline; cursor:pointer;
+  }
+
+  header.school-head{ text-align:center; margin-bottom: 10px; }
+  header.school-head .school{
+    font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--primary-deep); font-weight: 700; opacity: 0.75;
+  }
+  header.school-head .school .kh{ text-transform:none; letter-spacing:0; display:block; font-size:0.82rem; }
+
+  .progress-wrap{
+    background: var(--card); border: 2px solid var(--accent); border-radius: 16px;
+    padding: 14px 18px; margin-bottom: 20px; position:relative; overflow:hidden;
+  }
+  .progress-label{ display:flex; justify-content:space-between; font-size: 0.9rem; color: var(--primary-deep); margin-bottom: 8px; font-weight:600; }
+  .progress-track{ height: 14px; background: var(--accent-soft); border-radius: 10px; overflow:hidden; }
+  .progress-fill{ height:100%; background: linear-gradient(90deg, var(--primary), var(--success)); width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+  .celebrate{ text-align:center; font-size: 0.9rem; font-weight:700; color: var(--success); margin-top:8px; display:none; }
+
+  .who-row{ display:flex; gap:10px; align-items:center; justify-content:center; margin: 0 0 16px; }
+  .who-row label{ font-size:0.78rem; color:#8a8a8a; display:block; margin-bottom:2px; }
+  .who-row input[type="date"]{
+    border: 2px solid var(--accent); border-radius: 10px; padding: 7px 10px;
+    font-family: inherit; background: white; color: var(--primary-deep); font-size: 0.9rem;
+  }
+
+  .section{
+    background: var(--card); border-radius: 18px; margin-bottom: 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06); overflow: hidden; border: 2px solid var(--accent-soft);
+  }
+  .section-head{
+    display:flex; align-items:center; gap:10px; padding: 14px 16px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-deep)); color: white;
+    cursor:pointer; user-select:none;
+  }
+  .section-head .icon{ font-size:1.4rem; }
+  .section-head .titles{ flex:1; }
+  .section-head .titles .en{ font-weight:700; font-size:1rem; }
+  .section-head .titles .kh{ font-size:0.82rem; opacity:0.9; }
+  .section-head .count{ font-size:0.8rem; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-weight:600; }
+  .section-head .chevron{ transition: transform 0.25s ease; font-size: 0.8rem; }
+  .section.collapsed .chevron{ transform: rotate(-90deg); }
+  .section.collapsed .items{ display:none; }
+
+  .items{ padding: 8px 8px 12px; }
+  .item{
+    display:flex; align-items:flex-start; gap:10px; padding: 11px 12px;
+    border-radius: 12px; margin: 3px 6px; cursor:pointer; transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .item:hover{ background: var(--accent-soft); }
+  .item:active{ transform: scale(0.98); }
+  .item.checked{ background: #f2f9f0; }
+
+  .item-icon{ font-size: 1.5rem; min-width: 32px; text-align:center; margin-top: -2px; }
+
+  .checkbox{
+    width: 24px; height: 24px; min-width:24px; border-radius: 8px;
+    border: 3px solid var(--accent); margin-top: 3px; display:flex; align-items:center;
+    justify-content:center; font-size: 0.9rem; color: white; transition: all 0.15s ease;
+  }
+  .item.checked .checkbox{ background: var(--success); border-color: var(--success); }
+
+  .item-text{ flex:1; }
+  .item-text .en{ font-size: 0.98rem; font-weight: 600; color: var(--ink); }
+  .item-text .kh{ font-size: 0.85rem; color: #8a8a8a; margin-top: 1px; }
+  .item.checked .item-text .en, .item.checked .item-text .kh{
+    text-decoration: line-through; color: #a9c4ab;
+  }
+
+  .footer-actions{ display:flex; gap:10px; justify-content:center; margin-top: 6px; }
+  button.reset{
+    background: white; border: 2px solid #e39a8a; color: #c9503d;
+    padding: 10px 20px; border-radius: 20px; font-family: inherit; font-weight:700;
+    font-size: 0.85rem; cursor:pointer;
+  }
+  button.reset:hover{ background: #fdf1ee; }
+
+  .status-msg{ text-align:center; font-size:0.8rem; color:#b39b6f; margin-top:10px; min-height: 16px; }
+
+  .hidden{ display:none !important; }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- floating background decorations -->
+<span class="decor" style="top:6%; left:6%; animation-delay:0s;" id="d1"></span>
+<span class="decor" style="top:14%; right:8%; animation-delay:1.2s;" id="d2"></span>
+<span class="decor" style="bottom:18%; left:10%; animation-delay:2.1s;" id="d3"></span>
+<span class="decor" style="bottom:10%; right:12%; animation-delay:0.6s;" id="d4"></span>
+
+<div class="app">
+
+  <!-- ============ AUTH SCREEN ============ -->
+  <div id="authScreen">
+    <div class="auth-card">
+      <div class="school">Sovannphum School — Kampong Chhnang Campus<span class="kh">សាលាសុវណ្ណភូមិ សាខាកំពង់ឆ្នាំង</span></div>
+      <h1>My School Day Checklist<span class="kh">បញ្ជីត្រួតពិនិត្យប្រចាំថ្ងៃ</span></h1>
+
+      <div class="tabs">
+        <button class="tab-btn active" id="loginTab">Log In</button>
+        <button class="tab-btn" id="signupTab">Sign Up</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginForm">
+        <div class="field">
+          <label>Username / ឈ្មោះអ្នកប្រើ</label>
+          <input type="text" id="loginUsername" placeholder="e.g. dara123">
+        </div>
+        <div class="field">
+          <label>PIN (4-6 digits)</label>
+          <input type="password" inputmode="numeric" id="loginPin" placeholder="••••">
+        </div>
+        <button class="primary-btn" id="loginBtn">Log In 🔓</button>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div id="signupForm" class="hidden">
+        <div class="field">
+          <label>Choose a username / ជ្រើសរើសឈ្មោះអ្នកប្រើ</label>
+          <input type="text" id="signupUsername" placeholder="e.g. dara123">
+        </div>
+        <div class="field">
+          <label>Your name / ឈ្មោះរបស់អ្នក</label>
+          <input type="text" id="signupDisplayName" placeholder="e.g. Dara">
+        </div>
+        <div class="field">
+          <label>Choose a PIN (4-6 digits)</label>
+          <input type="password" inputmode="numeric" id="signupPin" placeholder="••••">
+        </div>
+        <div class="field">
+          <label>I am a... / ខ្ញុំជា...</label>
+          <div class="gender-pick">
+            <button type="button" class="gender-btn boy" id="pickBoy"><span class="emoji">👦</span>Boy</button>
+            <button type="button" class="gender-btn girl" id="pickGirl"><span class="emoji">👧</span>Girl</button>
+          </div>
+        </div>
+        <button class="primary-btn" id="signupBtn">Create My Account 🎉</button>
+      </div>
+
+      <div class="auth-error" id="authError"></div>
+    </div>
+  </div>
+
+  <!-- ============ APP SCREEN ============ -->
+  <div id="appScreen" class="hidden">
+    <header class="school-head">
+      <div class="school">Sovannphum School — Kampong Chhnang Campus<span class="kh">សាលាសុវណ្ណភូមិ សាខាកំពង់ឆ្នាំង</span></div>
+    </header>
+
+    <div class="topbar">
+      <div class="greet">
+        <span class="avatar" id="avatarEmoji">🙂</span>
+        <div>
+          <div class="name" id="greetName">Hi!</div>
+          <div class="sub">Let's finish today's checklist</div>
+        </div>
+      </div>
+      <button class="logout-btn" id="logoutBtn">Log out</button>
+    </div>
+
+    <div class="who-row">
+      <div>
+        <label>Date / ថ្ងៃទី</label>
+        <input type="date" id="dateInput">
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progressText">0 / 0 done</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="celebrate" id="celebrateMsg">🎉 All done! Great job today! 🎉</div>
+    </div>
+
+    <div id="sections"></div>
+
+    <div class="footer-actions">
+      <button class="reset" id="resetBtn">Clear today's checks / សម្អាតថ្ងៃនេះ</button>
+    </div>
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+
+</div>
+
+<script>
+// PASTE your deployed Google Apps Script Web App URL here (ends in /exec)
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyIux0BpL8-2ZQvnwC_bTErxevifgoc9Y9JwRqeU7PkiEn8f_ctXcI-rzS85CNmyf0/exec";
+
+const DATA = [
+  {
+    key: "morning", icon: "🌅", en: "Before School", kh: "មុនចូលរៀន",
+    items: [
+      {icon:"⏰", en:"Wake up on time", kh:"ក្រោកពីគេងទាន់ពេល"},
+      {icon:"🪥", en:"Brush teeth & wash face", kh:"ដុសធ្មេញ លាងមុខ"},
+      {icon:"🚿", en:"Shower and wear clean uniform", kh:"ងូតទឹក ស្លៀកឯកសណ្ឋានស្អាត"},
+      {icon:"🍳", en:"Eat breakfast", kh:"ញ៉ាំអាហារពេលព្រឹក"},
+      {icon:"🎒", en:"Pack books & homework for today", kh:"រៀបសៀវភៅ និងកិច្ចការសម្រាប់ថ្ងៃនេះ"},
+      {icon:"🖊️", en:"Pack pencil case, water bottle, lunch", kh:"រៀបប្រអប់សម្ភារៈ ដបទឹក អាហារថ្ងៃត្រង់"},
+      {icon:"👟", en:"Wear shoes and leave on time", kh:"ស្លៀកស្បែកជើង ចេញផ្ទះទាន់ពេល"}
+    ]
+  },
+  {
+    key: "english", icon: "🔤", en: "English Class · 7:00 – 11:00 AM", kh: "ថ្នាក់ភាសាអង់គ្លេស",
+    items: [
+      {icon:"🚪", en:"Arrive at school on time", kh:"មកដល់សាលារៀនទាន់ពេលវេលា"},
+      {icon:"🙏", en:"Greet teacher and friends politely", kh:"ជម្រាបសួរគ្រូ និងមិត្តភ័ក្តិដោយគួរសម"},
+      {icon:"📖", en:"Bring English books & notebook", kh:"នាំមកសៀវភៅ និងសៀវភៅកត់ត្រាភាសាអង់គ្លេស"},
+      {icon:"👂", en:"Listen and take notes in class", kh:"ស្តាប់ និងកត់ត្រាក្នុងថ្នាក់"},
+      {icon:"🙋", en:"Ask questions if you don't understand", kh:"សួរសំណួរប្រសិនបើមិនយល់"},
+      {icon:"🤝", en:"Share and be kind to friends", kh:"ចែករំលែក និងសប្បុរសនឹងមិត្តភ័ក្តិ"},
+      {icon:"🧴", en:"Wash hands before eating", kh:"លាងដៃមុនញ៉ាំអាហារ"}
+    ]
+  },
+  {
+    key: "khmer", icon: "🇰🇭", en: "Khmer Class · 1:00 – 5:00 PM", kh: "ថ្នាក់ភាសាខ្មែរ",
+    items: [
+      {icon:"🍽️", en:"Finish lunch and rest before class", kh:"ញ៉ាំបាយថ្ងៃត្រង់ និងសម្រាកមុនចូលរៀន"},
+      {icon:"📚", en:"Bring Khmer books & notebook", kh:"នាំមកសៀវភៅ និងសៀវភៅកត់ត្រាភាសាខ្មែរ"},
+      {icon:"✍️", en:"Listen and take notes in class", kh:"ស្តាប់ និងកត់ត្រាក្នុងថ្នាក់"},
+      {icon:"🙋", en:"Ask questions if you don't understand", kh:"សួរសំណួរប្រសិនបើមិនយល់"},
+      {icon:"🧹", en:"Keep belongings safe and organized", kh:"រក្សាសម្ភារៈផ្ទាល់ខ្លួនឱ្យមានសណ្ដាប់ធ្នាប់"},
+      {icon:"🚻", en:"Use the toilet during break, not during class", kh:"ប្រើបង្គន់ពេលសម្រាក មិនមែនពេលរៀន"}
+    ]
+  },
+  {
+    key: "evening", icon: "🌇", en: "Evening — After School", kh: "ល្ងាច — បន្ទាប់ពីចូលរៀន",
+    items: [
+      {icon:"🏠", en:"Come straight home safely", kh:"ត្រឡប់ផ្ទះដោយសុវត្ថិភាព"},
+      {icon:"👕", en:"Change clothes, wash hands and face", kh:"ផ្លាស់សម្លៀកបំពាក់ លាងដៃលាងមុខ"},
+      {icon:"💬", en:"Tell parents about your school day", kh:"ប្រាប់ឪពុកម្ដាយអំពីថ្ងៃសិក្សា"},
+      {icon:"📝", en:"Do and check today's homework", kh:"ធ្វើ និងពិនិត្យកិច្ចការផ្ទះ"},
+      {icon:"🔁", en:"Review today's English & Khmer lessons", kh:"មើលមេរៀនអង់គ្លេស និងខ្មែរឡើងវិញ"},
+      {icon:"🎒", en:"Pack bag for tomorrow", kh:"រៀបធនធានសម្រាប់ថ្ងៃស្អែក"},
+      {icon:"🍚", en:"Eat dinner with family", kh:"ញ៉ាំអាហារល្ងាចជាមួយគ្រួសារ"},
+      {icon:"😴", en:"Brush teeth and go to bed on time", kh:"ដុសធ្មេញ ចូលគេងទាន់ពេល"}
+    ]
+  }
+];
+
+let session = { username:"", gender:"boy", displayName:"" };
+let signupGender = null;
+let state = { date: null, checks: {} };
+
+function todayKey(){ return new Date().toISOString().slice(0,10); }
+function setStatus(msg){ document.getElementById('statusMsg').textContent = msg; }
+function setAuthError(msg){ document.getElementById('authError').textContent = msg; }
+
+function applyTheme(gender){
+  document.body.classList.remove('theme-boy','theme-girl');
+  document.body.classList.add(gender === 'girl' ? 'theme-girl' : 'theme-boy');
+  const cs = getComputedStyle(document.body);
+  document.getElementById('d1').textContent = cs.getPropertyValue('--bg-decor-1').replace(/['"]/g,'').trim();
+  document.getElementById('d2').textContent = cs.getPropertyValue('--bg-decor-2').replace(/['"]/g,'').trim();
+  document.getElementById('d3').textContent = cs.getPropertyValue('--bg-decor-3').replace(/['"]/g,'').trim();
+  document.getElementById('d4').textContent = cs.getPropertyValue('--bg-decor-4').replace(/['"]/g,'').trim();
+}
+
+/* ---------------- TABS ---------------- */
+document.getElementById('loginTab').addEventListener('click', ()=>{
+  document.getElementById('loginTab').classList.add('active');
+  document.getElementById('signupTab').classList.remove('active');
+  document.getElementById('loginForm').classList.remove('hidden');
+  document.getElementById('signupForm').classList.add('hidden');
+  setAuthError('');
+});
+document.getElementById('signupTab').addEventListener('click', ()=>{
+  document.getElementById('signupTab').classList.add('active');
+  document.getElementById('loginTab').classList.remove('active');
+  document.getElementById('signupForm').classList.remove('hidden');
+  document.getElementById('loginForm').classList.add('hidden');
+  setAuthError('');
+});
+document.getElementById('pickBoy').addEventListener('click', ()=>{
+  signupGender = 'boy';
+  document.getElementById('pickBoy').classList.add('selected');
+  document.getElementById('pickGirl').classList.remove('selected');
+});
+document.getElementById('pickGirl').addEventListener('click', ()=>{
+  signupGender = 'girl';
+  document.getElementById('pickGirl').classList.add('selected');
+  document.getElementById('pickBoy').classList.remove('selected');
+});
+
+/* ---------------- AUTH CALLS ---------------- */
+document.getElementById('signupBtn').addEventListener('click', async ()=>{
+  setAuthError('');
+  const username = document.getElementById('signupUsername').value.trim();
+  const displayName = document.getElementById('signupDisplayName').value.trim();
+  const pin = document.getElementById('signupPin').value.trim();
+  if(!signupGender){ setAuthError('Please pick Boy or Girl.'); return; }
+  if(!username || !displayName || !pin){ setAuthError('Please fill in every field.'); return; }
+
+  try{
+    const res = await fetch(GAS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'signup', username, pin, gender: signupGender, displayName })
+    });
+    const data = await res.json();
+    if(!data.ok){ setAuthError(data.error || 'Could not create account.'); return; }
+    enterApp(data.username, data.gender, data.displayName);
+  }catch(e){
+    setAuthError('Could not reach the server. Check the backend URL.');
+  }
+});
+
+document.getElementById('loginBtn').addEventListener('click', async ()=>{
+  setAuthError('');
+  const username = document.getElementById('loginUsername').value.trim();
+  const pin = document.getElementById('loginPin').value.trim();
+  if(!username || !pin){ setAuthError('Please enter your username and PIN.'); return; }
+
+  try{
+    const res = await fetch(GAS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'login', username, pin })
+    });
+    const data = await res.json();
+    if(!data.ok){ setAuthError(data.error || 'Could not log in.'); return; }
+    enterApp(data.username, data.gender, data.displayName);
+  }catch(e){
+    setAuthError('Could not reach the server. Check the backend URL.');
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  session = { username:"", gender:"boy", displayName:"" };
+  document.getElementById('appScreen').classList.add('hidden');
+  document.getElementById('authScreen').classList.remove('hidden');
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPin').value = '';
+});
+
+function enterApp(username, gender, displayName){
+  session = { username, gender, displayName };
+  applyTheme(gender);
+  document.getElementById('avatarEmoji').textContent = gender === 'girl' ? '👧' : '👦';
+  document.getElementById('greetName').textContent = `Hi, ${displayName}!`;
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('appScreen').classList.remove('hidden');
+  state.date = todayKey();
+  document.getElementById('dateInput').value = state.date;
+  loadChecks();
+}
+
+/* ---------------- CHECKLIST LOGIC ---------------- */
+async function loadChecks(){
+  setStatus('Loading…');
+  try{
+    const url = `${GAS_URL}?action=checks&username=${encodeURIComponent(session.username)}&date=${encodeURIComponent(state.date)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    state.checks = (data.ok && data.checks) ? data.checks : {};
+    setStatus('');
+  }catch(e){
+    state.checks = {};
+    setStatus("Offline — checks won't be saved until backend URL is set");
+  }
+  render();
+}
+
+async function toggleItem(itemId){
+  state.checks[itemId] = !state.checks[itemId];
+  render();
+  setStatus('Saving…');
+  try{
+    await fetch(GAS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'toggle', username: session.username, date: state.date, itemId, checked: state.checks[itemId] })
+    });
+    setStatus('Saved ✓');
+    setTimeout(()=> setStatus(''), 1200);
+  }catch(e){
+    setStatus('Could not save — check backend URL / connection');
+  }
+}
+
+async function resetDay(){
+  state.checks = {};
+  render();
+  setStatus('Clearing…');
+  try{
+    await fetch(GAS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'reset', username: session.username, date: state.date })
+    });
+    setStatus('Cleared ✓');
+    setTimeout(()=> setStatus(''), 1200);
+  }catch(e){
+    setStatus('Could not clear — check backend URL / connection');
+  }
+}
+
+function toggleSection(sectionEl){ sectionEl.classList.toggle('collapsed'); }
+
+function render(){
+  const container = document.getElementById('sections');
+  container.innerHTML = '';
+  let totalItems = 0, totalChecked = 0;
+
+  DATA.forEach(section=>{
+    const sectionChecked = section.items.filter(it => state.checks[`${section.key}:${it.en}`]).length;
+    totalItems += section.items.length;
+    totalChecked += sectionChecked;
+
+    const sectionEl = document.createElement('div');
+    sectionEl.className = 'section';
+
+    const head = document.createElement('div');
+    head.className = 'section-head';
+    head.innerHTML = `
+      <span class="icon">${section.icon}</span>
+      <span class="titles">
+        <div class="en">${section.en}</div>
+        <div class="kh">${section.kh}</div>
+      </span>
+      <span class="count">${sectionChecked}/${section.items.length}</span>
+      <span class="chevron">▾</span>
+    `;
+    head.addEventListener('click', ()=> toggleSection(sectionEl));
+
+    const itemsWrap = document.createElement('div');
+    itemsWrap.className = 'items';
+
+    section.items.forEach(it=>{
+      const id = `${section.key}:${it.en}`;
+      const checked = !!state.checks[id];
+      const itemEl = document.createElement('div');
+      itemEl.className = 'item' + (checked ? ' checked' : '');
+      itemEl.innerHTML = `
+        <span class="item-icon">${it.icon}</span>
+        <span class="checkbox">${checked ? '✓' : ''}</span>
+        <span class="item-text">
+          <div class="en">${it.en}</div>
+          <div class="kh">${it.kh}</div>
+        </span>
+      `;
+      itemEl.addEventListener('click', ()=> toggleItem(id));
+      itemsWrap.appendChild(itemEl);
+    });
+
+    sectionEl.appendChild(head);
+    sectionEl.appendChild(itemsWrap);
+    container.appendChild(sectionEl);
+  });
+
+  const pct = totalItems ? Math.round((totalChecked/totalItems)*100) : 0;
+  document.getElementById('progressText').textContent = `${totalChecked} / ${totalItems} done`;
+  document.getElementById('progressPct').textContent = `${pct}%`;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('celebrateMsg').style.display = (pct === 100 && totalItems > 0) ? 'block' : 'none';
+}
+
+document.getElementById('dateInput').addEventListener('change', (e)=>{
+  state.date = e.target.value;
+  loadChecks();
+});
+document.getElementById('resetBtn').addEventListener('click', resetDay);
+
+applyTheme('boy');
+</script>
+</body>
+</html>
